@@ -59,21 +59,20 @@ public class UserDaoImpl implements UserDao {
 
         var reviewQueryRes = queryFactory
                 .select(qReview.count(), qReview.rating.avg())
-                .from(qReview)
-                .innerJoin(qReview.guideProduct, qGuideProduct)
-                .where(qGuideProduct.user.eq(qUser));
+                .from(qReview).leftJoin(qGuideProduct).on(qGuideProduct.eq(qReview.guideProduct))
+                .where(qGuideProduct.user.eq(qUser))
+                .groupBy(qUser)
+                .where(qUser.id.eq(userId));
 
         res.forEach(userProfileDto -> {
             var reviewRes = reviewQueryRes.fetchFirst();
             if (reviewRes == null) {
+                userProfileDto.setReviewCount(0);
+                userProfileDto.setReviewRating(0.0f);
                 return;
             }
-            Long reviewCount = reviewRes.get(0, Long.class);
-            if (reviewCount != null) {
-                userProfileDto.setReviewCount(reviewCount.intValue());
-            }
-            Double reviewRating = reviewRes.get(1, Double.class);
-            userProfileDto.setReviewRating(reviewRating != null ? reviewRating.floatValue() : 0.0f);
+            userProfileDto.setReviewCount(reviewRes.get(0, Long.class).intValue());
+            userProfileDto.setReviewRating(reviewRes.get(1, Double.class).floatValue());
         });
 
         return res.stream().findFirst();
