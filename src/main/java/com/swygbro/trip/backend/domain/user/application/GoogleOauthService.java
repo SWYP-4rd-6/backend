@@ -61,10 +61,10 @@ public class GoogleOauthService {
     }
 
     public ResponseEntity<?> callback(String code) throws JsonProcessingException {
-        System.out.println("code in code:" + code);
+        System.out.println("code in callback:" + code);
         String googleAccessToken = getGoogleAccessToken(code);
         GoogleUserInfo userInfo = getGoogleUserInfo(googleAccessToken);
-
+        System.out.println("userInfo in callback:" + userInfo);
         Optional<User> user = userRepository.findByEmail(userInfo.getEmail());
 
         // 등록된 회원이라면 로그인처리
@@ -75,10 +75,10 @@ public class GoogleOauthService {
                             .token(tokenService.generateToken(userInfo.getEmail()))
                             .build());
         }
-
+        System.out.println("userInfo in callback:" + userInfo);
         UUID uuid = UUID.randomUUID();
         httpSession.setAttribute(String.valueOf(uuid), userInfo);
-        System.out.println("uuid in code:" + uuid);
+        System.out.println("uuid in callback:" + uuid);
         return ResponseEntity
                 .status(HttpStatus.MOVED_PERMANENTLY)
                 .body(new GoogleUserInfoDto(userInfo, uuid.toString()));
@@ -96,7 +96,7 @@ public class GoogleOauthService {
         }
 
         userValidationService.checkEmailDupl(userInfo.getEmail());
-        
+
         User createdUser = userRepository.save(
                 new User(dto, userInfo)
         );
