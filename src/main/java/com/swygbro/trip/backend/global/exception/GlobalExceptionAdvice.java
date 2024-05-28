@@ -62,6 +62,7 @@ public class GlobalExceptionAdvice {
     })
     public ResponseEntity<?> handleSpringMvcException(Exception ex) {
         log.warn("handleSpringMvcException: {}", ex.getMessage());
+        ex.printStackTrace();
         return SpringMvcExceptionResponse.of(ex);
     }
 
@@ -74,6 +75,7 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(IamportResponseException.class)
     public ResponseEntity<?> handleExternalApiException(Exception ex) {
         log.warn("handleExternalApiException: {}", ex.getMessage());
+        ex.printStackTrace();
         return ExternalApiException.of(ex);
     }
 

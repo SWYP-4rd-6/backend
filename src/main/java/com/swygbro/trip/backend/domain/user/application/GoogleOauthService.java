@@ -61,6 +61,7 @@ public class GoogleOauthService {
     }
 
     public ResponseEntity<?> callback(String code) throws JsonProcessingException {
+        System.out.println("code in code:" + code);
         String googleAccessToken = getGoogleAccessToken(code);
         GoogleUserInfo userInfo = getGoogleUserInfo(googleAccessToken);
 
@@ -77,7 +78,7 @@ public class GoogleOauthService {
 
         UUID uuid = UUID.randomUUID();
         httpSession.setAttribute(String.valueOf(uuid), userInfo);
-
+        System.out.println("uuid in code:" + uuid);
         return ResponseEntity
                 .status(HttpStatus.MOVED_PERMANENTLY)
                 .body(new GoogleUserInfoDto(userInfo, uuid.toString()));
@@ -86,15 +87,16 @@ public class GoogleOauthService {
     @Transactional
     public UserInfoDto createUser(CreateGoogleUserRequest dto) throws JsonProcessingException {
         userValidationService.checkUniqueUser(dto);
+        System.out.println("userInfo in createUser:" + dto);
 
         GoogleUserInfo userInfo = (GoogleUserInfo) httpSession.getAttribute(dto.getUuid());
-
+        System.out.println("userInfo in createUser:" + userInfo);
         if (userInfo == null) {
             throw new UuidExpiredException();
         }
 
         userValidationService.checkEmailDupl(userInfo.getEmail());
-
+        
         User createdUser = userRepository.save(
                 new User(dto, userInfo)
         );
